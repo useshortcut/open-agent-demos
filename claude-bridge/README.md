@@ -6,7 +6,7 @@ It is a general agent. What it can do comes from the agent you create in Managed
 
 It is a reference demo, not an official integration. It uses one Anthropic API key, one agent, and one environment for every connected workspace, so anyone who can mention it can direct that agent and spend on that key. It serves only the workspaces listed in `ALLOWED_WORKSPACE_IDS`. Shortcut shows an unapproved agent app to every workspace in your organization, so the list is what keeps other workspaces off your key.
 
-**This bridge has not been run against the live Managed Agents API yet.** Its tests run against a mock of the API built from the documentation and the `@anthropic-ai/sdk` type declarations. [Assumptions](#assumptions) lists each place where the bridge relies on behavior the documentation does not state. A first live run should check each one.
+**This bridge has been run against the live Managed Agents API.** Its automated tests run against a mock of the API built from the documentation and the `@anthropic-ai/sdk` type declarations. [Assumptions](#assumptions) lists each place where the bridge relies on behavior the documentation does not state.
 
 For the platform itself (OAuth, webhooks, app review), see [docs/open-agents.md](../docs/open-agents.md).
 
@@ -96,7 +96,7 @@ A message has no idempotency key: a step that dies after the send went through s
 
 ## Assumptions
 
-The bridge relies on these where the Managed Agents documentation and the SDK types are silent. Each needs a live run to confirm.
+The bridge relies on these where the Managed Agents documentation and the SDK types are silent. Each stays an assumption until a run checks it directly.
 
 - **Queued messages in the list.** The documentation says a sent `user.message` has a null `processed_at` while it is queued. It does not say whether the event list includes it then. The bridge waits for the anchor to appear with a `processed_at` either way, in a poll and before a stop is answered. One path depends on it: when the bridge never got the answer to its first send, it decides whether the session still needs the introduction by listing `user.message` events. If the list leaves a queued message out, the session is introduced twice.
 - **Read-after-write.** The bridge assumes that an event a send created is in the list on the next read. Tool-result adoption depends on it. A result that lands but is not yet listed would be sent again. The API accepts the second one with no effect, and the bridge would read the turn from that event.
